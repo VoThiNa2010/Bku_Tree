@@ -31,19 +31,19 @@ public:
     ~BKUTree() { this->clear(); }
    
 
-    void add(K key, V value) ;
-    void remove(K key);
-    V search(K key, vector<K>& traversedList);
+    //void add(K key, V value) ;
+    //void remove(K key);
+    //V search(K key, vector<K>& traversedList);
 
-    void traverseNLROnAVL(void (*func)(K key, V value)) {
-        this->avl->traverseNLR(*func);
-    };
-    void traverseNLROnSplay(void (*func)(K key, V value));
+    //void traverseNLROnAVL(void (*func)(K key, V value)) {
+    //    this->avl->traverseNLR(*func);
+    //};
+    //void traverseNLROnSplay(void (*func)(K key, V value));
 
-    void clear();
+    //void clear();
     
-
-    /*class SplayTree {
+   
+    class SplayTree {
     public:
         class Node {
         public : 
@@ -51,6 +51,13 @@ public:
             Node* left;
             Node* right;
             typename AVLTree::Node* corr;
+            Node(K key, V value) {
+                this->entry = new Entry(key, value);
+                //this->balance = 0;
+                this->right = NULL;
+                this->left = NULL;
+            }
+
             Node(Entry* entry = NULL, Node* left = NULL, Node* right = NULL) {
                 this->entry = entry;
                 this->left = left;
@@ -64,25 +71,7 @@ public:
 
         SplayTree() : root(NULL) {};
         ~SplayTree() { this->clear(); };
-
-        void add(K key, V value) {
-            Node* new_node = new Node();
-            new_node->entry->key = key;
-            new_node->entry->value = value;
-           Node* insert(root , new_node , key);
-        };
-        void add(Entry* entry) {
-            Node* new_node = new Node();
-            new_node->entry->key = entry->key;
-            new_node->entry->value = entry->value;
-            Node* insert(root, new_node, entry->key);
-        };
-        void remove(K key) { delete_Node_Tree_SPlay(root, key); };
-        V search(K key) { splay(root, key); };
-
-        void traverseNLR(void (*func)(K key, V value)) {};
-
-        void clear() { deleteTree_Splay(&root); };
+       
         ////
         Node* rightRotate(Node* x)
         {
@@ -101,7 +90,7 @@ public:
         }
         Node* splay(Node* root, K key)
         {
-            if (root == NULL || root->key == key)
+            if (root == NULL || root->entry->key == key)
                 return root;
 
             if (root->entry->key > key)
@@ -137,7 +126,7 @@ public:
                     if (root->right->left != NULL)
                         root->right = rightRotate(root->right);
                 }
-                else if (root->right->key < key)// Zag-Zag (Right Right)  
+                else if (root->right->entry->key < key)// Zag-Zag (Right Right)  
                 {
                     root->right->right = splay(root->right->right, key);
                     root = leftRotate(root);
@@ -145,32 +134,56 @@ public:
                 return (root->right == NULL) ? root : leftRotate(root);
             }
         }
-       
-        Node* insert(Node* root, Node* new_node, K key)
+        //kiem tra xem key da co trong tree chua
+        bool check_Node_have_or_nohave(Node* root, K key) {
+
+            if (root == NULL) { return 0; }
+
+            if (key == root->entry->key) { return 1; }
+            else if (key > root->entry->key) {
+                return check_Node_have_or_nohave(root->right, key);
+            }
+            else return check_Node_have_or_nohave(root->left, key);
+
+            return 0;
+
+        }
+        //add
+        void add(K key, V value) {
+            if (check_Node_have_or_nohave(root, key) == 0) {
+                this->root = insert(this->root, key, value);
+           }
+        };
+        void add(Entry* entry) {
+            if (check_Node_have_or_nohave(root, entry->key) == 0) {
+                this->root = insert(this->root, entry->key, entry->value);
+            }
+        };
+        Node* insert(Node* root,  K key, V value)
         {
-
+            Node* new_node = new Node(key , value);
             if (root == NULL) return new_node;
-            root = splay(root, key); 
+            root = splay(root, key);
             if (root->entry->key == key) return root;
-
-            Node* newnode = newNode(key);
 
             if (root->entry->key > key)
             {
-                newnode->right = root;
-                newnode->left = root->left;
+                new_node->right = root;
+                new_node->left = root->left;
                 root->left = NULL;
             }
 
             else
             {
-                newnode->left = root;
-                newnode->right = root->right;
+                new_node->left = root;
+                new_node->right = root->right;
                 root->right = NULL;
             }
 
-            return newnode; // newnode becomes new root  
+            return new_node; // newnode becomes new root  
         }
+        // remove 
+        void remove(K key) { delete_Node_Tree_SPlay(root, key); };
         Node* delete_Node_Tree_SPlay(Node* root, int key)
         {
             Node* temp = new Node();
@@ -196,6 +209,23 @@ public:
             return root;
 
         }
+        //search
+        V search(K key) { splay(root, key); };
+        // print 
+        void traverseNLR(void (*func)(K key, V value)) {
+             print_Pre_order_Traversal(this->root, func);
+
+         };
+        void print_Pre_order_Traversal(Node* _root, void (*func)(K key, V value)) {
+            if (_root == NULL) { return; }
+
+            (func)(_root->entry->key, _root->entry->value);
+            print_Pre_order_Traversal(_root->left, *func);
+            print_Pre_order_Traversal(_root->right, *func);
+
+    }
+        //clear
+        void clear() { deleteTree_Splay(&root); };
         void _deleteTree_Splay(Node* node)
         {
             if (node == NULL) return;
@@ -211,13 +241,14 @@ public:
             _deleteTree(*node_ref);
             *node_ref = NULL;
         }
-
-
-    }; */
-
+       
+ 
+    }; 
+   
 
     class AVLTree {
     public:
+        friend class BKUTree;
         class Node {
         public : 
             Entry* entry;
@@ -226,9 +257,10 @@ public:
             int balance;
            // typename SplayTree::Node* corr;
             Node(  K key , V value ) {
-            
-                  new Entry(key , value);
-             
+                  this->entry = new Entry(key, value);
+                  this->balance = 0;
+                  this->right = NULL;
+                  this->left = NULL;
              }
 
             Node(Entry* entry =NULL , Node* left = NULL, Node* right = NULL) {
@@ -248,58 +280,6 @@ public:
 
         AVLTree() : root(NULL) {};
         ~AVLTree() { this->clear(); };
-        // print Pre-order Traversal
-            
-        void print_Pre_order_Traversal(Node* _root, void (*func)(K key, V value)) {
-            if (_root == NULL) { return; }
-                 
-                (func)(_root->entry->key, _root->entry->value);
-                 print_Pre_order_Traversal(_root->left, *func);
-                print_Pre_order_Traversal(_root->right, *func);
-            
-       }
-        //kiem tra xem key da co trong tree chua
-        bool check_Node_have_or_nohave(Node* root, K key) {
-           
-            if (root == NULL) return 0;
-            else {
-                // K key = node->entry->key;
-                if (root->entry->key == key) return 1;
-                else if (root->entry->key > key) check_Node_have_or_nohave(root->left, key);
-                else if (root->entry->key < key) check_Node_have_or_nohave(root->right, key);
-                return 0;
-            }
-        }
-
-        void add(K key, V value) {
-          
-          //  if (check_Node_have_or_nohave(root, key) == 1)  throw std::out_of_range("Duplicate key"); 
-           // else {
-           
-                Node* new_node = new Node(key, value);
-                cout << new_node->entry->key;
-                cout << new_node->entry->value;
-              
-                node_Insert_add(root,new_node, key);
-           
-           //}
-        };
-        void add(Entry* entry) {
-            Node* new_node = new Node(entry->key , entry->value);
-         
-            node_Insert_add(root,new_node, entry->key);
-        };
-        void remove(K key) { remove_node_Tree(root, key); };
-        V search(K key) { search_Tree(root, key); };
-       
-        void traverseNLR(void (*func)(K key, V value)) {
-            print_Pre_order_Traversal(this->root, func);
-        
-        
-        };
-
-        void clear() { deleteTree(&root); };
-
         //
         int max(K a, K b) { return (a > b) ? a : b; };
         int getHeightRec(Node* node) {
@@ -331,16 +311,55 @@ public:
             return getHeightRec(node->left) - getHeightRec(node->right);
 
         };
-        Node* node_Insert_add(Node* root,Node* new_node , K key) {
+        // print 
+        void traverseNLR(void (*func)(K key, V value)) {
+            print_Pre_order_Traversal(this->root, func);
+
+        };
+       void print_Pre_order_Traversal(Node* _root, void (*func)(K key, V value)) {
+            if (_root == NULL) { return; }
+                 
+                (func)(_root->entry->key, _root->entry->value);
+                 print_Pre_order_Traversal(_root->left, *func);
+                print_Pre_order_Traversal(_root->right, *func);
             
+       }
+        //kiem tra xem key da co trong tree chua
+        bool check_Node_have_or_nohave(Node* root, K key) {
             
-            if (root ==NULL) return new_node;
-     
+            if (root == NULL) {  return 0; }
+            
+            if (key == root->entry->key) {  return 1; }
+            else if (key > root->entry->key) {
+                return check_Node_have_or_nohave(root->right, key);
+            }
+            else return check_Node_have_or_nohave(root->left, key);
+           
+            return 0;
+            
+        }
+        // add
+        void add(K key, V value) { 
+            if (check_Node_have_or_nohave(this->root, key) == 0) { 
+                
+                this->root = node_Insert_add(this->root, key, value);
+            } 
+        };
+        void add(Entry* entry) {
+            if (check_Node_have_or_nohave(this->root, entry->key) == 0) {
+                this->root = node_Insert_add(this->root, entry->key, entry->value);
+            }
+        };
+        Node* node_Insert_add(Node* root, K key, V value) {
+
+            Node* new_node = new Node(key, value);
+            if (root == NULL) return new_node;
+
             if (key < root->entry->key) {
-                root->left = node_Insert_add(root->left,new_node, key);
+                root->left = node_Insert_add(root->left, key, value);
             }
             else if (key > root->entry->key) {
-                root->right = node_Insert_add(root->right, new_node, key);
+                root->right = node_Insert_add(root->right, key, value);
             }
             // modify
             root->balance = getBalance(root);
@@ -364,6 +383,75 @@ public:
             return root;
 
         };
+        // remove
+        void remove(K key) {
+            if (check_Node_have_or_nohave(this->root, key) == 1) {
+                this->root = remove_node_Tree(root, key);
+            }
+        };
+        Node* remove_node_Tree(Node* root, K key) {
+            if (root == NULL)
+                return root;
+            if (key < root->entry->key)
+                root->left = remove_node_Tree(root->left, key);
+            else if (key > root->entry->key)
+                root->right = remove_node_Tree(root->right, key);
+            else
+            {
+                if ((root->left == NULL) || (root->right == NULL))
+
+                {
+                    Node* temp = root->left ? root->left : root->right;
+                    if (temp == NULL)  // khong co node con nao 
+                    {
+                        temp = root;
+                        root = NULL;
+                    }
+                    else {
+                        *root = *temp;
+                        free(temp);
+                    }
+                }
+                else      // co ca 2 node con ben phai va ben trai
+                {
+                    Node* temp = maxValueNode(root->left);
+                    root->entry->key = temp->entry->key;
+                    root->left = remove_node_Tree(root->left, temp->entry->key);
+
+                }
+            }
+            if (root == NULL)
+                return root;
+            int balance = getBalance(root);
+            // Left Left Case  
+            if (balance > 1 && getBalance(root->left) >= 0)
+
+                return rotate_Right(root);
+
+            // Left Right Case  
+            if (balance > 1 && getBalance(root->left) < 0)
+
+            {
+                root->left = rotate_Left(root->left);
+                return rotate_Right(root);
+            }
+
+            // Right Right Case  
+            if (balance < -1 && getBalance(root->right) <= 0)
+
+                return rotate_Left(root);
+
+            // Right Left Case  
+            if (balance < -1 && getBalance(root->right) > 0)
+
+            {
+                root->right = rotate_Right(root->right);
+                return rotate_Left(root);
+            }
+
+            return root;
+
+        }
         Node* maxValueNode(Node* node)
         {
             Node* current = node;
@@ -373,95 +461,25 @@ public:
 
             return current;
         }
-        Node* delete_Node(Node* node, K key) {
+        //search
+        V search(K key) {
+            if (check_Node_have_or_nohave(this->root, key) == 1) {
 
-            if (node == NULL)
-                return node;
-            if (key < node->entry->key)
-                node->left = delete_Node(node->left, key);
-
-            else if (key > node->entry->key)
-                node->right = delete_Node(node->right, key);
-
-            else
-            {
-                if ((node->left == NULL) || (node->right == NULL))
-
-                {
-                    Node* temp = node->left ? node->left : node->right;
-                    if (temp == NULL)
-                    {
-                        temp = node;
-                        node = NULL;
-                    }
-                    else    *node = *temp;
-                    free(temp);
-                }
-                else
-                {
-
-                    Node* temp = maxValueNode(node->left);
-                    node->entry->key = temp->key;
-
-                    node->left = delete_Node(node->left, temp->key);
-                }
+                return search_Tree(this->root, key);
             }
-
-            if (node == NULL)
-                return node;
-
-            int balance = getBalance(node);
-
-
-            // Left Left Case  
-            if (balance > 1 && getBalance(node->left) >= 0)
-
-                return rotate_Right(node);
-
-            // Left Right Case  
-            if (balance > 1 && getBalance(node->left) < 0)
-
-            {
-                node->left = rotate_Left(node->left);
-                return rotate_Right(node);
-            }
-
-            // Right Right Case  
-            if (balance < -1 && getBalance(node->right) <= 0)
-
-                return rotate_Left(node);
-
-            // Right Left Case  
-            if (balance < -1 && getBalance(node->right) > 0)
-
-            {
-                node->right = rotate_Right(node->right);
-                return rotate_Left(node);
-            }
-
-            return node;
-        }
+        };
         V search_Tree(Node* root, K key) {
 
-            if (root == NULL)return -1;
-            if (key == root->entry->key) return root->entry->value;
-            else if (key > root->entry->key) {
-                return search_Tree(root->right, key);
-            }
-            else return search_Tree(root->left, key);
-            return -1;
-        }
-        void remove_node_Tree(Node* root, K key) {
 
-            if (root == NULL)return -1;
-            if (key == root->entry->key) { delete_Node(root, key); }
-            else if (key > root->entry->key) {
-                return remove_node_Tree(root->right, key);
-            }
-            else return remove_node_Tree(root->left, key);
-            return -1;
+            if (root->entry->key > key) { search_Tree(root->left, key); }
 
+            else if (root->entry->key < key) { search_Tree(root->right, key); }
+            else { cout << root->entry->value; return 0; }
         }
+
+        //clear 
+        void clear() { deleteTree(&root); };
+
         void _deleteTree(Node* node)
         {
             if (node == NULL) return;
@@ -477,39 +495,39 @@ public:
             _deleteTree(*node_ref);
             *node_ref = NULL;
         }
-       
+
 
     };
    
 };
 
-////hien thuc BKU Tree
-template<class K , class V>
-void BKUTree<K,V>::add(K key, V value) {
-   //if (keys.size() == maxNumOfKeys) { keys.pop(); }
-    //this->keys.push(key);
-    //this->splay->add(key, value);
-    this->avl->add(key, value);
-
-
-};
-template<class K, class V>
-void BKUTree<K, V>::remove(K key) {
-
-};
-template<class K, class V>
-V BKUTree<K, V>::search(K key, vector<K>& traversedList) {};
-//template<class K, class V>
-//void BKUTree<K, V>::traverseNLROnAVL(void (*func)(K key, V value)) {
+//////hien thuc BKU Tree
+//template<class K , class V>
+//void BKUTree<K,V>::add(K key, V value) {
+//   //if (keys.size() == maxNumOfKeys) { keys.pop(); }
+//    //this->keys.push(key);
+//    //this->splay->add(key, value);
+//    this->avl->add(key, value);
+//
 //
 //};
-template<class K, class V>
-void BKUTree<K, V>::traverseNLROnSplay(void (*func)(K key, V value)) {};
-template<class K, class V>
-void BKUTree<K, V>::clear() {
-    this->avl->clear();
-    this->splay->clear();
-};
+//template<class K, class V>
+//void BKUTree<K, V>::remove(K key) {
+//
+//};
+//template<class K, class V>
+//V BKUTree<K, V>::search(K key, vector<K>& traversedList) {};
+////template<class K, class V>
+////void BKUTree<K, V>::traverseNLROnAVL(void (*func)(K key, V value)) {
+////
+////};
+//template<class K, class V>
+//void BKUTree<K, V>::traverseNLROnSplay(void (*func)(K key, V value)) {};
+//template<class K, class V>
+//void BKUTree<K, V>::clear() {
+//    this->avl->clear();
+//    this->splay->clear();
+//};
 
 
 void printKey(int key, int value) {
@@ -519,10 +537,25 @@ void printKey(int key, int value) {
 
 int main() {
    
-    BKUTree<int, int>* tree = new BKUTree<int, int>();
+    BKUTree<int, int>::SplayTree* tree = new BKUTree<int, int>::SplayTree();
     int keys[] = { 1, 3, 5, 7, 9, 2, 4 };
     for (int i = 0; i < 7; i++) tree->add(keys[i], keys[i]);
-    tree->traverseNLROnAVL(printKey);
+    //tree->traverseNLROnAVL(printKey);
     //tree->traverseNLROnSplay(printKey);
+    //for (int i = 0; i < 9; i++) tree->search(keys[i]);
+    //tree->add(100, 128);
+    //tree->remove(100);
+   
+    //tree->clear();
+    cout << "------------------------------" << endl;
+    //tree->search(100);
+    tree->traverseNLR(printKey); 
+    //
+    //BKUTree<int, int>::AVLTree* avl = new BKUTree<int, int>::AVLTree();
+    //int keys[] = { 1, 3, 5, 7, 9, 2, 4 };
+    //for (int i = 0; i < 7; i++) avl->add(keys[i], keys[i]);
+    ////avl.printTreeStructure();
+    //avl->traverseNLR(printKey);
+
 
 }
