@@ -74,7 +74,8 @@ public:
             Node* right;
             Node* parent;
 
-            typename AVLTree::Node* corr;
+          typename AVLTree::Node* corr;
+
             Node(K key, V value) {
                 this->entry = new Entry(key, value);
 
@@ -94,7 +95,7 @@ public:
         };
 
     public:
-
+        vector<K> search_keys_Splay;
         Node* root;
         SplayTree() : root(NULL) {};
         ~SplayTree() { this->clear(); };
@@ -355,9 +356,8 @@ public:
         }
         V search(K key) {
             if (check_Node_have_or_nohave(this->root, key) == 1) {
-                this->root = searchTree(key);
-                cout << root->entry->value;
-                return 0;
+                return searchTree(key)->entry->key;
+                
             }
             else throw "Not found";
         }
@@ -408,11 +408,56 @@ public:
         // dung trong cay BKU TREE
         Node* search_Node(Node* root, K key, V value) {
 
-            Node* node = new Node(key, value);
+            //Node* node = new Node(key, value);
 
-            if (root->entry->key > node->entry->key) { search_Node(root->left, key, value); }
-            else if (root->entry->key < node->entry->key) { search_Node(root->right, key, value); }
-            return node;
+            if (root->entry->key > key) { search_Node(root->left, key, value); }
+            else if (root->entry->key < key) { search_Node(root->right, key, value); }
+            else return root;
+        }
+
+        //splay 1 lan
+        void search_splay_1_Splay_BKU(Node* x , K _key) {
+            this->search_keys_Splay.push_back(x->entry->key);
+            if (x->entry->key == _key) {
+                //splay 1 lan
+                if (x->parent != NULL) {
+                    if (!x->parent->parent) {
+                        if (x == x->parent->left) {
+                            // zig rotation
+                            rightRotate(x->parent);
+                        }
+                        else {
+                            // zag rotation
+                            leftRotate(x->parent);
+                        }
+                    }
+                    else if (x == x->parent->left && x->parent == x->parent->parent->left) {
+                        // zig-zig rotation
+                        rightRotate(x->parent->parent);
+                        rightRotate(x->parent);
+                    }
+                    else if (x == x->parent->right && x->parent == x->parent->parent->right) {
+                        // zag-zag rotation
+                        leftRotate(x->parent->parent);
+                        leftRotate(x->parent);
+                    }
+                    else if (x == x->parent->right && x->parent == x->parent->parent->left) {
+                        // zig-zag rotation
+                        leftRotate(x->parent);
+                        rightRotate(x->parent);
+                    }
+                    else {
+                        // zag-zig rotation
+                        rightRotate(x->parent);
+                        leftRotate(x->parent);
+                    }
+                }
+
+
+            }
+            else if (x->entry->key > _key) { return search_splay_1_Splay_BKU(x->left, _key); }
+            else return search_splay_1_Splay_BKU(x->right, _key);
+           
         }
     };
     class AVLTree {
@@ -422,7 +467,8 @@ public:
             Entry* entry;
             Node* left;
             Node* right;
-            int balance;
+            Node* parent; int balance;
+            
             typename SplayTree::Node* corr;
             Node(K key, V value) {
                 this->entry = new Entry(key, value);
@@ -430,6 +476,7 @@ public:
                 this->right = NULL;
                 this->left = NULL;
                 this->corr = NULL;
+                
             }
 
             Node(Entry* entry = NULL, Node* left = NULL, Node* right = NULL) {
@@ -440,17 +487,19 @@ public:
                 this->right = right;
                 this->balance = 0;
                 this->corr = NULL;
+              
 
             }
         };
 
     public:
+        vector<K> keys_search_AVL;
         Node* root;
        
         AVLTree() : root(NULL) {};
         ~AVLTree() { this->clear(); };
         //
-        queue<K> keys_search_AVL;
+        
         int max(K a, K b) { return (a > b) ? a : b; };
         int getHeightRec(Node* node) {
             if (node == NULL)
@@ -642,18 +691,19 @@ public:
             //search
             V search(K key) {
                 if (check_Node_have_or_nohave(this->root, key) == 1) {
-
-                    return search_Tree(this->root, key);
+                   
+                    return search_Tree(this->root, key)->entry->value;
+                     
                 }
                 else throw "Not found";
             };
-            V search_Tree(Node * root, K key) {
+            Node* search_Tree(Node * root, K key) {
 
 
                 if (root->entry->key > key) { search_Tree(root->left, key); }
 
                 else if (root->entry->key < key) { search_Tree(root->right, key); }
-                else { cout << root->entry->value; return 0; }
+                else { return root; }
             }
 
             //clear 
@@ -678,45 +728,38 @@ public:
             //dung trong cay BKUTREE
             Node* search_Node(Node * root, K key, V value) {
                
-                        Node* node = new Node(key, value);
+                        //Node* node = new Node(key, value);
                    
-                        if (root->entry->key > node->entry->key) { search_Node(root->left, key, value); }
-                        else if (root->entry->key < node->entry->key) { search_Node(root->right, key, value); }
-                        else return node;
+                        if (root->entry->key > key) { search_Node(root->left, key, value); }
+                        else if (root->entry->key < key) { search_Node(root->right, key, value); }
+                        else return root;
                     
                 
                
             } 
             //dung de search tren key_value cay con cuar AVL 
-            Node* search_Child_AVL_Tree(Node* root, K _key_rootChild,K _key) {
-                if (root != NULL) {
-                    this->keys_search_AVL.push(root->entry->key);
-                    if (root->entry->key == _key_rootChild) {
-                        if (root->entry->key == _key) {
-                            
-                            return root;
-                        }
+            Node* search_Child_AVL_Tree(Node* _key_rootChild,Node* _rootChild, K _key) {
+                if (_key_rootChild != NULL) {
+                    this->keys_search_AVL.push_back(_key_rootChild->entry->key);
 
-                        else if (root->entry->key > _key) return search_Child_AVL_Tree(root->left, _key_rootChild, _key);
-                        else return search_Child_AVL_Tree(root->right, _key_rootChild, _key);
+                    if (_key_rootChild->entry->key == _key) {
+                        return _key_rootChild;
+                    }
+                    else if (_key_rootChild->entry->key < _key) return  search_Child_AVL_Tree(_key_rootChild->right, _rootChild, _key);
+                    else return search_Child_AVL_Tree(_key_rootChild->left, _rootChild, _key);
 
-                    }
-                    else if (root->entry->key > _key_rootChild) {
-                        return search_Child_AVL_Tree(root->left, _key_rootChild, _key);
-                    }
-                    else return search_Child_AVL_Tree(root->right, _key_rootChild, _key);
-
-                    }
-                else { search_BKU_Tree_AVL(this->root, _key_rootChild, _key); }
 
                 }
+                else return search_BKU_Tree_AVL(this->root,_rootChild,  _key);
+            }
 
-            Node* search_BKU_Tree_AVL(Node* root, K _key_rootChild, K _key) {
-
+            Node* search_BKU_Tree_AVL(Node* root, Node* _rootChild, K _key) {
+                this->keys_search_AVL.push_back(root->entry->key);
                 if (root != NULL) {
-                    if (root->entry->key == _key_rootChild) { throw"Not found"; }
-                    else if (root->entry->key > _key)  return search_BKU_Tree_AVL(root->left, _key_rootChild, _key);
-                    else if (root->entry->key < _key) return search_BKU_Tree_AVL(root->right, _key_rootChild, _key);
+                    if (root->entry->key == _rootChild->entry->key) { throw"Not found"; }
+                    else if (root->entry->key == _key) return root;
+                    else if (root->entry->key > _key)  return search_BKU_Tree_AVL(root->left, _rootChild, _key);
+                    else if (root->entry->key < _key) return search_BKU_Tree_AVL(root->right, _rootChild, _key);
                     else return root;
                 }
                 else throw "Not found";
@@ -743,6 +786,25 @@ public:
             this->keys.pop();
         }
       
+    }
+
+
+
+
+    ////////
+    void checkNode(vector<K>& nodeAVL, vector<K>& nodeSPLAY) {
+        if (avl == NULL) return;
+        checkTrueNode(nodeAVL, nodeSPLAY, avl->root);
+    }
+    void checkTrueNode(vector<K>& nodeAVL, vector<K>& nodeSPLAY, typename AVLTree::Node* f) {
+        if (!f)  return;
+        typename SplayTree::Node* r = f->corr;
+        if (r->entry->key != f->entry->key) {
+            nodeAVL.push_back(f->entry->key);
+            nodeSPLAY.push_back(r->entry->key);
+        }
+        checkTrueNode(nodeAVL, nodeSPLAY, f->left);
+        checkTrueNode(nodeAVL, nodeSPLAY, f->right);
     }
   
     };
@@ -826,11 +888,10 @@ public:
         
         this->avl->add(key, value);
         this->splay->add(key, value);
-       
-        ( this->avl->search_Node(this->avl->root, key, value))->corr = (this->splay->root); //splayNode;
-        (this->splay->root)->corr = (this->avl->search_Node(this->avl->root, key, value));
-      
-
+        typename AVLTree::Node* avlNode = this->avl->search_Node( avl->root,key,value);
+        typename SplayTree::Node* splayNode = this->splay->search_Node(splay->root, key, value);
+        splayNode->corr = avlNode;
+        avlNode->corr = splayNode;
         this->handle_add_queue(key);
         return;
     }
@@ -843,22 +904,30 @@ public:
     };
     template<class K, class V>
     V BKUTree<K, V>::search(K key, vector<K>& traversedList) {
-        if (this->splay->root->entry->key == key|| this->handle_search_queue(key) == 1) return this->splay->search(key);
-        else {
-            //duyet cay con AVL voi goc la goc cay splay tham chieu qua
+        if (this->splay->root->entry->key == key) return this->splay->root->entry->value;
+        else if (this->handle_search_queue(key) == 1) {
+            this->splay->search_splay_1_Splay_BKU(splay->root, key);
 
-           /* typename BKUTree<K, V>::AVLTree::Node* avlNode =*/ 
-            cout<< this->avl->search_Child_AVL_Tree(this->avl->root, this->splay->root->corr->entry->key, key)->entry->value;
-            //traversedList.push_back()
-      
-            //this->splay->splay(avlNode->corr);
+            // dung 1 vector de luu gia tri ma no da di qua 
+            traversedList = this->splay->search_keys_Splay;
+            this->splay->search_keys_Splay.clear();
+        }
+       
+        else {
+            
+
+            // thao khao den cay AVL con co goc r'
+
+            this->splay->search_splay_1_Splay_BKU(splay->root , (this->avl->search_Child_AVL_Tree( this->splay->root->corr, this->splay->root->corr, key))->corr->entry->key);
 
             //traversedList
-            while (this->avl->keys_search_AVL.size() != 0) {
+            /*while (this->avl->keys_search_AVL.size() != 0) {
                 traversedList.push_back(this->avl->keys_search_AVL.front());
                     this->avl->keys_search_AVL.pop();
 
-            }
+            }*/
+            traversedList = this->avl->keys_search_AVL;
+            this->avl->keys_search_AVL.clear();
 
         }
     
@@ -870,48 +939,32 @@ public:
     };
 
 
-
+//
     void printKey(int key, int value) {
     cout << key << endl;
     }
-    
 
-    //print Tree
-
-
-
-
-
-
-
-
-
-
+////
   int main() {
     try {
-        BKUTree<int, int>* tree = new BKUTree<int, int>(4);
+        BKUTree<int, int>* tree = new BKUTree<int, int>();
         vector<int> abc;
         int keys[] = { 1, 3, 5, 7, 9, 2, 4 ,45 };
         for (int i = 0; i < 8; i++) tree->add(keys[i], keys[i] * 10);
-
-       /* tree->search(5, abc);
-        for (auto i = abc.begin(); i != abc.end(); i++) {
-            cout << *i << ",";
-        }*/
-       // cout << tree->splay->root->corr->entry->key;
-        /*cout << tree->avl->root->entry->key << endl;
-        cout << tree->splay->root->entry->key << endl;
         
-        */
-        //tree->add(1, 2);
-       
-        //cout << tree->splay->root->corr->entry->key;
-        //cout << tree->avl->root->corr->entry->key;
-       // tree->add(1, 2);
-        tree->search(7, abc);
+        tree->search(5, abc);
         for (auto i = abc.begin(); i != abc.end(); i++) {
             cout << *i << ",";
         }
+        cout << tree->avl->keys_search_AVL.size();
+       
+       /*
+        tree->search(1, abc);
+        for (auto i = abc.begin(); i != abc.end(); i++) {
+            cout << *i << ",";
+        }
+        tree->print_queue_keys();*/
+        //cout << tree->splay->root->corr->entry->key << "hfuh";
 
     }
     catch (const char* e) {
