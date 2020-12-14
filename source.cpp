@@ -290,7 +290,6 @@ public:
             }
 
             if (x == NULL) {
-                //cout << "Couldn't find key in the tree" << endl;
                 return;
             }
             split(x, s, t); // split the tree
@@ -356,7 +355,7 @@ public:
         }
         V search(K key) {
             if (check_Node_have_or_nohave(this->root, key) == 1) {
-                return searchTree(key)->entry->key;
+                return searchTree(key)->entry->value;
                 
             }
             else throw "Not found";
@@ -410,8 +409,8 @@ public:
 
             //Node* node = new Node(key, value);
 
-            if (root->entry->key > key) { search_Node(root->left, key, value); }
-            else if (root->entry->key < key) { search_Node(root->right, key, value); }
+            if (root->entry->key > key) { return search_Node(root->left, key, value); }
+            else if (root->entry->key < key) { return search_Node(root->right, key, value); }
             else return root;
         }
 
@@ -727,15 +726,10 @@ public:
 
             //dung trong cay BKUTREE
             Node* search_Node(Node * root, K key, V value) {
-               
-                        //Node* node = new Node(key, value);
-                   
-                        if (root->entry->key > key) { search_Node(root->left, key, value); }
-                        else if (root->entry->key < key) { search_Node(root->right, key, value); }
+              
+                        if (root->entry->key > key) { return search_Node(root->left, key, value); }
+                        else if (root->entry->key < key) { return search_Node(root->right, key, value); }
                         else return root;
-                    
-                
-               
             } 
             //dung de search tren key_value cay con cuar AVL 
             Node* search_Child_AVL_Tree(Node* _key_rootChild,Node* _rootChild, K _key) {
@@ -920,19 +914,13 @@ public:
 
             this->splay->search_splay_1_Splay_BKU(splay->root , (this->avl->search_Child_AVL_Tree( this->splay->root->corr, this->splay->root->corr, key))->corr->entry->key);
 
-            //traversedList
-            /*while (this->avl->keys_search_AVL.size() != 0) {
-                traversedList.push_back(this->avl->keys_search_AVL.front());
-                    this->avl->keys_search_AVL.pop();
-
-            }*/
             traversedList = this->avl->keys_search_AVL;
             this->avl->keys_search_AVL.clear();
 
         }
     
         this->keys.push(key);
-        if (this->keys.size() > this->maxNumOfKeys) { this->keys.pop(); }
+        if ((int)this->keys.size() > (int)this->maxNumOfKeys) { this->keys.pop(); }
     
     
     
@@ -940,34 +928,50 @@ public:
 
 
 //
-    void printKey(int key, int value) {
+   /* void printKey(int key, int value) {
     cout << key << endl;
-    }
+    }*/
 
 ////
-  int main() {
-    try {
-        BKUTree<int, int>* tree = new BKUTree<int, int>();
-        vector<int> abc;
-        int keys[] = { 1, 3, 5, 7, 9, 2, 4 ,45 };
-        for (int i = 0; i < 8; i++) tree->add(keys[i], keys[i] * 10);
-        
-        tree->search(5, abc);
-        for (auto i = abc.begin(); i != abc.end(); i++) {
-            cout << *i << ",";
-        }
-        cout << tree->avl->keys_search_AVL.size();
-       
-       /*
-        tree->search(1, abc);
-        for (auto i = abc.begin(); i != abc.end(); i++) {
-            cout << *i << ",";
-        }
-        tree->print_queue_keys();*/
-        //cout << tree->splay->root->corr->entry->key << "hfuh";
-
-    }
-    catch (const char* e) {
-        cerr << e << '\n';
-    }
-}
+//  int main() {
+//    try {
+//        BKUTree<int, int>* tree = new BKUTree<int, int>();
+//        vector<int> abc;
+//        int keys[] = { 1, 3, 5, 7, 9, 2, 4 ,45 ,100,89,56,54,34,88,43 ,76,87 };
+//        for (int i = 0; i < 17; i++) tree->add(keys[i], keys[i] * 10);
+//        
+//        tree->remove(1);
+//        tree->remove(45);
+//        tree->remove(100);
+//        tree->remove(87);
+//        tree->remove(7);
+//        tree->remove(76);
+//        
+//        tree->search(89 , abc );
+//        tree->traverseNLROnAVL(printKey);
+//        cout << "________________________" << endl;
+//        tree->traverseNLROnSplay(printKey);
+//
+//
+//
+//        /*tree->search(5, abc);
+//        for (auto i = abc.begin(); i != abc.end(); i++) {
+//            cout << *i << ",";
+//        }
+//        cout << tree->avl->keys_search_AVL.size();*/
+//
+//        
+//       
+//       /*
+//        tree->search(1, abc);
+//        for (auto i = abc.begin(); i != abc.end(); i++) {
+//            cout << *i << ",";
+//        }
+//        tree->print_queue_keys();*/
+//        //cout << tree->splay->root->corr->entry->key << "hfuh";
+//
+//    }
+//    catch (const char* e) {
+//        cerr << e << '\n';
+//    }
+//}
