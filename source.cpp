@@ -24,9 +24,7 @@ public:
     SplayTree* splay;
     queue<K> keys;
     queue<K> keys_remove;
-    queue<K> keys_search;
-
-   
+    queue<K> keys_search;  
     vector<K> save_Node_SearchBKU;
     int maxNumOfKeys;
     friend class AVLTree;
@@ -43,28 +41,26 @@ public:
          }
    
     ~BKUTree() { this->clear(); }
-
-   
+//BKU
     void add(K key, V value); 
     void remove(K key);
     V search(K key, vector<K>& traversedList);
-
     void traverseNLROnAVL(void (*func)(K key, V value)) {
 
         this->avl->traverseNLR(*func);
     };
-    void traverseNLROnSplay(void (*func)(K key, V value)) {
+   void traverseNLROnSplay(void (*func)(K key, V value)) {
         this->splay->traverseNLR(*func);
     };
-
-    void clear() {
+   void clear() {
         this->avl->clear();
         this->splay->clear();
 
     };
-
-
-
+   // xu ly queue
+   void handle_add_queue(K key);
+   void handle_remove_queue(K key, K root);
+   bool handle_search_queue(K key);   //check xem node caanf duyeet co nam trong hang doi khong
     class SplayTree {
     public:
         class Node {
@@ -191,7 +187,6 @@ public:
         }
         void add(K key, V value) {
             if (check_Node_have_or_nohave(this->root, key) == 0) {
-                // normal BST insert
                 Node* node = new Node(key, value);
                 node->parent = NULL;
                 node->left = NULL;
@@ -267,12 +262,12 @@ public:
         //remove 
         void remove(K key) {
             if (check_Node_have_or_nohave(this->root, key) == 1) {
-                deleteNodeHelper(this->root, key);
+                remove_Node_Splay(this->root, key);
             }
             else throw "Not found";
 
         }
-        void deleteNodeHelper(Node* node, K key) {
+        void remove_Node_Splay(Node* node, K key) {
             Node* x = NULL;
             Node* t;
             Node* s;
@@ -308,14 +303,13 @@ public:
             if (!t) {
                 return s;
             }
-            Node* x = maximum(s);
+            Node* x = Max_Node(s);
             splay(x);
             x->right = t;
             t->parent = x;
             return x;
         }
-
-        // splits the tree into s and t
+       // splits the tree into s and t
         void split(Node*& x, Node*& s, Node*& t) {
             splay(x);
             if (x->right) {
@@ -330,7 +324,7 @@ public:
             x = NULL;
         }
         // find the node with the minimum key
-        Node* minimum(Node* node) {
+        Node* Min_Node(Node* node) {
             while (node->left != NULL) {
                 node = node->left;
             }
@@ -338,7 +332,7 @@ public:
         }
 
         // find the node with the maximum key
-        Node* maximum(Node* node) {
+        Node* Max_Node(Node* node) {
             while (node->right != NULL) {
                 node = node->right;
             }
@@ -347,7 +341,7 @@ public:
 
         //search
         Node* searchTree(K key) {
-            Node* x = searchTreeHelper(this->root, key);
+            Node* x = search_Tree(this->root, key);
             if (x) {
                 splay(x);
             }
@@ -360,7 +354,7 @@ public:
             }
             else throw "Not found";
         }
-        Node* searchTreeHelper(Node* node, K key) {
+        Node* search_Tree(Node* node, K key) {
             if (node == NULL || key == node->entry->key) {
                 return node;
             }
@@ -370,9 +364,6 @@ public:
             }
             return searchTreeHelper(node->right, key);
         }
-        //clear
-
-
         // print 
         void traverseNLR(void (*func)(K key, V value)) {
             print_Pre_order_Traversal(this->root, func);
@@ -406,9 +397,6 @@ public:
 
         // dung trong cay BKU TREE
         Node* search_Node(Node* root, K key, V value) {
-
-            //Node* node = new Node(key, value);
-
             if (root->entry->key > key) { return search_Node(root->left, key, value); }
             else if (root->entry->key < key) { return search_Node(root->right, key, value); }
             else return root;
@@ -506,9 +494,7 @@ public:
             Entry* entry;
             Node* left;
             Node* right;
-           
-            int balance;
-            
+            int balance;           
             typename SplayTree::Node* corr;
             Node(K key, V value) {
                 this->entry = new Entry(key, value);
@@ -518,7 +504,6 @@ public:
                 this->corr = NULL;
                 
             }
-
             Node(Entry* entry = NULL, Node* left = NULL, Node* right = NULL) {
 
                 this->entry = entry;
@@ -534,8 +519,7 @@ public:
 
     public:
         vector<K> keys_search_AVL;
-        Node* root;
-       
+        Node* root;       
         AVLTree() : root(NULL) {};
         ~AVLTree() { this->clear(); };
         //
@@ -547,8 +531,7 @@ public:
             int lh = this->getHeightRec(node->left);
             int rh = this->getHeightRec(node->right);
             return (lh > rh ? lh : rh) + 1;
-        };
-        
+        };      
         Node* rotate_Right(Node* node) {
             Node* new_node1 = node->left;
             Node* new_node2 = new_node1->right;
@@ -596,8 +579,6 @@ public:
 
         }
         // add
-
-       // void add(K key, V value) {
             void add(K key, V value) {
                 if (check_Node_have_or_nohave(this->root, key) == 0) {
 
@@ -612,9 +593,7 @@ public:
                 }
                 else throw "Duplicate key";
             }
-            Node* node_Insert_add(Node * root, K key, V value) {
-                
-                
+            Node* node_Insert_add(Node * root, K key, V value) {               
                 if (root == NULL) { 
                     Node* new_node = new Node(key, value); 
                     return new_node;
@@ -626,14 +605,14 @@ public:
                 else if (key > root->entry->key) {
                     root->right = node_Insert_add(root->right, key, value);
                 }
-                
-
-                //case left_left
                
+                //case left_left               
                 if (getBalance(root) > 1 && key < root->left->entry->key) { return rotate_Right(root); }
                 //case  right_right
                 if (getBalance(root) < -1 && key > root->right->entry->key)
+                {
                     return rotate_Left(root);
+                }
                 //case right_of_left
                 if (getBalance(root) < -1 && key < root->right->entry->key)
                 {
@@ -772,7 +751,6 @@ public:
                 _deleteTree(*node_ref);
                 *node_ref = NULL;
             }
-
             //dung trong cay BKUTREE
             Node* search_Node(Node * root, K key, V value) {
               
@@ -800,7 +778,6 @@ public:
                 }
                 else return search_BKU_Tree_AVL(this->root,_rootChild,  _key);
             }
-
             Node* search_BKU_Tree_AVL(Node* root, Node* _rootChild, K _key) {
                 
                 if (root != NULL) {
@@ -824,44 +801,6 @@ public:
              
 
         };
-
-       
-        // xu ly queue
-    void handle_add_queue(K key);
-    void handle_remove_queue(K key , K root);
-    bool handle_search_queue(K key);   //check xem node caanf duyeet co nam trong hang doi khong
-
-    // in ra keys de check thu khong nop 
-
-    void print_queue_keys() {
-       
-        while (!this->keys.empty()) {
-            cout << this->keys.front() <<"*";
-            this->keys.pop();
-        }
-      
-    }
-
-
-
-
-    ////////
-    void checkNode(vector<K>& nodeAVL, vector<K>& nodeSPLAY) {
-        if (avl == NULL) return;
-        checkTrueNode(nodeAVL, nodeSPLAY, avl->root);
-    }
-    void checkTrueNode(vector<K>& nodeAVL, vector<K>& nodeSPLAY, typename AVLTree::Node* f) {
-        if (!f)  return;
-        typename SplayTree::Node* r = f->corr;
-        if (r->entry->key != f->entry->key) {
-            nodeAVL.push_back(f->entry->key);
-            nodeSPLAY.push_back(r->entry->key);
-        }
-        checkTrueNode(nodeAVL, nodeSPLAY, f->left);
-        checkTrueNode(nodeAVL, nodeSPLAY, f->right);
-    }
-
-  
     };
 
     // xu ly queue 
@@ -872,13 +811,10 @@ public:
             this->keys.push(key);
         }
         else { this->keys.push(key); }
-
-
     }
     template<class K, class V>
     void BKUTree<K, V>::handle_remove_queue(K key, K _root) {
         //xoa key da tim kiem gan nhat neu co 
-
         if (this->keys.size() != 0) {
             if (this->keys.front() != key) {
 
@@ -893,22 +829,20 @@ public:
             }
         }
         else {
-
             while (this->keys_remove.size() != 0) {
                 K temp = this->keys_remove.front();
                 this->keys.push(temp);
                 this->keys_remove.pop();
             }
-            // cout << _root << "njsfdjh";
             this->keys.push(_root);
             if (this->keys.size() > this->maxNumOfKeys) { this->keys.pop(); }
 
         }
 
-    }
+    }  
     template<class K, class V>
     bool BKUTree<K, V>::handle_search_queue(K key) {
-        //tra ve neu co key can duyet co trong hang doi
+        //kiem tra keys co chua key minh can seach khong ?
         int temp1 = 0; //dung de dem so lan xuat hien trong queue
         if (this->keys.size() != 0) {
             if (this->keys.front() != key) {
@@ -925,9 +859,7 @@ public:
             }
         }
         else {
-
-            while (this->keys_search.size() != 0) {
-                
+            while (this->keys_search.size() != 0) {               
                 this->keys.push(this->keys_search.front());
                 this->keys_search.pop();
             }
@@ -935,12 +867,9 @@ public:
         if (temp1 > 0) return 1;
         else return 0;
     }
-
-
 //BKU
     template<class K,class V>
     void BKUTree<K, V>::add(K key, V value) {
-        
         this->avl->add(key, value);
         this->splay->add(key, value);
         typename AVLTree::Node* avlNode = this->avl->search_Node( avl->root,key,value);
@@ -955,16 +884,13 @@ public:
         this->avl->remove(key);
         this->splay->remove(key);
         this->handle_remove_queue(key, this->splay->root->entry->key);
-    
     };
     template<class K, class V>
     V BKUTree<K, V>::search(K key, vector<K>& traversedList) {
 
         if (this->splay->root->entry->key == key) { return this->splay->root->entry->value; }
-        else if (this->handle_search_queue(key) == 1) {
-            /* BKUTree<K,V>::SplayTree* _node = this->splay->search_splay_1_Splay_BKU(splay->root, key);*/
+        else if (this->handle_search_queue(key) == 1) {          
             V _value = (this->splay->search_splay_1_Splay_BKU(splay->root, key))->entry->value;
-
             // dung 1 vector de luu gia tri ma no da di qua 
             traversedList = this->splay->search_keys_Splay;
             this->splay->search_keys_Splay.clear();
@@ -974,9 +900,7 @@ public:
             return _value;
         }
         else {
-            // c ,d ,e
             //
-            // vua tham khao den goc root cuar splay sang cay AVL ,... sau do tham khao laij cay splay 
             typename BKUTree<K, V>::SplayTree::Node* _node = (this->avl->search_Child_AVL_Tree(this->splay->root->corr, this->splay->root->corr, key))->corr;
            
             this->splay->splay1(_node);
@@ -998,55 +922,54 @@ public:
 
 
 
-    void printKey(int key, int value) {
+
+
+
+    //
+  /*  void printKey(int key, int value) {
     cout << key << endl;
-    }
+    }*/
 
 //////
-  int main() {
+ /* int main() {
     try {
         BKUTree<int, int>* tree = new BKUTree<int, int>();
-        vector<int> abc;
-        int keys[] = { 1, 3, 5, 7, 9, 2, 4 ,67,98,100,45,35,89,76};
-        for (int i = 0; i < 14; i++) tree->add(keys[i], keys[i]*10);
+        int keys[] = { 1, 3, 5, 7, 9, 2, 4 ,67,98,100,45,35,89,76 };
+        for (int i = 0; i < 14; i++) tree->add(keys[i], keys[i]);
+        cout << "---76-67-45-35-9-4-2-1-3-5-7-89-98-100" << endl;
+        tree->traverseNLROnSplay(printKey);
+        cout << "--7-3-1-2-5-4-67-35-9-45-98-89-76-100-----------" << endl;
+        tree->traverseNLROnAVL(printKey);
+        cout << "REMOVE 05 :" << endl;
         tree->remove(5);
-     
+        cout << "--4-2-1-3-67-35-9-7-45-76-89-98-100" << endl;
+        tree->traverseNLROnSplay(printKey);
+        cout << "--7-3-1-2-4-67-35-9-45-98-89-76-100----" << endl;
+        tree->traverseNLROnAVL(printKey);
+        cout << "REMOVE 89:" << endl;
+
         tree->remove(89);
-       
+        cout << "-76-4-2-1-3-67-35-9-7-45-7-89-98-100" << endl;
+        tree->traverseNLROnSplay(printKey);
+        cout << "--7-3-1-2-4-67-35-9-45-98-76-100----" << endl;
+        tree->traverseNLROnAVL(printKey);
+        cout << "REMOVE 76:" << endl;
         tree->remove(76);
-   
-        cout << "TEST SEARCH: " << endl;
-       /*     cout << "350 ---67" << endl;
-        cout << endl << tree->search(35, abc) << endl;
-        for (auto i = abc.begin(); i != abc.end(); i++) {
-            cout << *i << ",";
-            cout << "--------------------" << endl;
-         
-        }*/
+        cout << "-67-4-2-1-3-35-9-7-45-98-100" << endl;
+        tree->traverseNLROnSplay(printKey);
+        cout << "--7-3-1-2-4-67-35-9-45-98-100---" << endl;
+        tree->traverseNLROnAVL(printKey);
 
+        cout << "TEST CORR :" << endl;
+        cout << "------4672----" << endl;
+        cout << tree->splay->root->left->corr->entry->key;
+        cout << tree->splay->root->corr->entry->key;
+        cout << tree->splay->root->left->left->corr->entry->key;
 
-       /* cout << "--980,67----";
-        cout << endl << tree->search(98, abc) << endl;
-        for (auto i = abc.begin(); i != abc.end(); i++) {
-            cout << *i << ",";
-        }
-            cout << "--------------------" << endl;*/
-
-        /*
-
-        cout << "--40-67-35-9-7-3-" << endl;
-        cout << endl << tree->search(4, abc) << endl;
-        for (auto i = abc.begin(); i != abc.end(); i++) {
-            cout << *i << ",";
-        }
-        */
-
-        cout << "-----------" << endl;
-            tree->print_queue_keys();
- 
-
+        cout << "--------------------" << endl;
+        tree->print_queue_keys();
         }
     catch (const char* e) {
         cerr << e << '\n';
     }
-}
+}*/
